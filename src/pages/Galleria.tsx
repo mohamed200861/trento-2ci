@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-import heroFoto from "@/assets/real-muse-serra.jpg";
+import heroFotoDefault from "@/assets/real-terrazza.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import muse from "@/assets/real-muse-sala.jpg";
@@ -16,6 +16,7 @@ export default function Galleria() {
   const [index, setIndex] = useState(0);
   const [photos, setPhotos] = useState<{ src: string }[]>([]);
   const { get } = useSiteContent();
+  const heroFoto = get("galleria_hero_url") || heroFotoDefault;
 
   useEffect(() => {
     supabase.from("gallery_photos").select("url").order("sort_order").order("created_at").then(({ data }) => {

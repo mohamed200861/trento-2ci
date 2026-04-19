@@ -59,7 +59,7 @@ export default function Admin() {
           ))}
         </div>
 
-        {tab === "home" && <p className="card-elev p-8 text-muted-foreground">I testi della Home si modificano nella scheda <strong>Testi del sito</strong>. Le foto principali (hero, MUSE, piazza, terrazza) sono fisse nel codice — per cambiarle, sostituiscile dalla scheda Galleria oppure caricale qui sotto come foto di galleria in evidenza.</p>}
+        {tab === "home" && <HomeAdmin/>}
         {tab === "gallery" && <GalleryAdmin/>}
         {tab === "videos" && <VideosAdmin/>}
         {tab === "articles" && <ArticlesAdmin/>}
@@ -272,6 +272,97 @@ function TextsAdmin() {
           <button onClick={() => save(f.key)} className="mt-3 text-sm flex items-center gap-2 text-primary hover:text-accent"><Save className="w-4 h-4"/>Salva</button>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ============ HOME IMAGES ============
+const HOME_IMAGES: { key: string; label: string; description: string }[] = [
+  { key: "home_hero_url", label: "Foto principale (Hero in alto)", description: "Sfondo grande accanto al titolo \"2CI a Trento\"." },
+  { key: "header_logo_url", label: "Foto tonda accanto al titolo (header)", description: "Piccola immagine circolare accanto a \"2CI a Trento\" nella barra in alto." },
+  { key: "home_muse_serra_url", label: "Sezione MUSE · serra tropicale", description: "Foto grande nel blocco \"Tra ghiacciai, foreste e piani di altitudine\"." },
+  { key: "home_muse_sala_url", label: "Sezione MUSE · sala interna", description: "Foto piccola sotto, nello stesso blocco MUSE." },
+  { key: "home_piazza_url", label: "Sezione Centro storico (Piazza Duomo)", description: "Foto grande nel blocco \"Tra piazze, fontane e secoli di storia\"." },
+  { key: "galleria_hero_url", label: "Galleria · foto hero in alto", description: "Sfondo della pagina Galleria." },
+  { key: "footer_bg_url", label: "Footer · sfondo del piè di pagina", description: "Immagine sfumata sul fondo del sito." },
+];
+
+function HomeAdmin() {
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+
+  const load = () => supabase.from("site_content").select("key,value").then(({ data }) => {
+    const m: Record<string, string> = {};
+    data?.forEach((r: any) => { m[r.key] = r.value; });
+    setValues(m);
+  });
+  useEffect(() => { load(); }, []);
+
+  const uploadImage = async (key: string, file: File) => {
+    setBusyKey(key);
+    try {
+      const path = `${key}-${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+      const { error } = await supabase.storage.from("site-images").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from("site-images").getPublicUrl(path);
+      const { error: e2 } = await supabase.from("site_content").upsert({ key, value: publicUrl });
+      if (e2) throw e2;
+      toast.success("Immagine aggiornata");
+      load();
+    } catch (e: any) { toast.error(e.message); } finally { setBusyKey(null); }
+  };
+
+  const reset = async (key: string) => {
+    if (!confirm("Ripristinare l'immagine originale?")) return;
+    await supabase.from("site_content").upsert({ key, value: "" });
+    toast.success("Ripristinata"); load();
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="card-elev p-6 bg-accent/10 border-accent/30">
+        <p className="text-sm text-muted-foreground">
+          Da qui puoi sostituire <strong>tutte le foto della Home</strong> e dell'header/footer senza toccare il codice.
+          Carica una nuova immagine per vedere subito l'anteprima. Se lasci vuoto, viene mostrata la foto originale.
+        </p>
+      </div>
+      <div className="grid md:grid-cols-2 gap-5">
+        {HOME_IMAGES.map(img => {
+          const current = values[img.key];
+          const busy = busyKey === img.key;
+          return (
+            <div key={img.key} className="card-elev p-5">
+              <div className="flex items-start gap-2 mb-3">
+                <ImageIcon className="w-4 h-4 text-accent mt-1 flex-shrink-0"/>
+                <div>
+                  <div className="font-display text-base font-semibold">{img.label}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{img.description}</div>
+                </div>
+              </div>
+              <div className="aspect-video rounded-xl overflow-hidden bg-muted border border-border mb-3 grid place-items-center">
+                {current ? (
+                  <img src={current} alt="" className="w-full h-full object-cover"/>
+                ) : (
+                  <span className="text-xs text-muted-foreground italic">Foto originale (predefinita)</span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2 items-center">
+                <label className="flex-1">
+                  <input type="file" accept="image/*" disabled={busy}
+                    onChange={e => e.target.files?.[0] && uploadImage(img.key, e.target.files[0])}
+                    className="block w-full text-xs file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-primary file:text-primary-foreground file:cursor-pointer hover:file:bg-primary/90"/>
+                </label>
+                {current && (
+                  <button onClick={() => reset(img.key)} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1">
+                    <Trash2 className="w-3 h-3"/>Ripristina
+                  </button>
+                )}
+              </div>
+              {busy && <p className="text-xs text-accent mt-2 flex items-center gap-2"><Upload className="w-3 h-3 animate-pulse"/>Caricamento…</p>}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

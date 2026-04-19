@@ -1,8 +1,8 @@
 import { NavLink, Outlet, Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import logoFoto from "@/assets/real-muse-sala.jpg";
-import footerFoto from "@/assets/real-terrazza.jpg";
+import logoFotoDefault from "@/assets/real-muse-sala.jpg";
+import footerFotoDefault from "@/assets/real-muse-serra.jpg";
 import { useSiteContent } from "@/hooks/useSiteContent";
 
 const nav = [
@@ -17,6 +17,8 @@ export default function Layout() {
   const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
   const { get } = useSiteContent();
+  const logoFoto = get("header_logo_url") || logoFotoDefault;
+  const footerFoto = get("footer_bg_url") || footerFotoDefault;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -103,9 +105,8 @@ export default function Layout() {
             </div>
           </div>
           <div className="border-t border-primary-foreground/10">
-            <div className="container-prose py-6 flex flex-wrap items-center justify-between gap-3 text-xs text-primary-foreground/60">
-              <span>© {new Date().getFullYear()} Classe 2CI — Progetto di educazione civica</span>
-              <Link to="/admin" className="text-primary-foreground/40 hover:text-primary-foreground/80 transition-colors">Area riservata</Link>
+            <div className="container-prose py-6 text-xs text-primary-foreground/60 text-center">
+              © {new Date().getFullYear()} Classe 2CI — Progetto di educazione civica
             </div>
           </div>
         </div>

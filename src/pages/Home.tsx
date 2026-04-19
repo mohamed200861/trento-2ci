@@ -1,13 +1,17 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Camera, Film, FileText, Clock, MapPin } from "lucide-react";
-import hero from "@/assets/real-terrazza.jpg";
-import muse from "@/assets/real-muse-sala.jpg";
-import serra from "@/assets/real-muse-serra.jpg";
-import piazza from "@/assets/real-piazza-duomo.jpg";
+import heroDefault from "@/assets/real-terrazza.jpg";
+import museDefault from "@/assets/real-muse-sala.jpg";
+import serraDefault from "@/assets/real-muse-serra.jpg";
+import piazzaDefault from "@/assets/real-piazza-duomo.jpg";
 import { useSiteContent } from "@/hooks/useSiteContent";
 
 export default function Home() {
   const { get } = useSiteContent();
+  const hero = get("home_hero_url") || heroDefault;
+  const muse = get("home_muse_sala_url") || museDefault;
+  const serra = get("home_muse_serra_url") || serraDefault;
+  const piazza = get("home_piazza_url") || piazzaDefault;
 
   return (
     <>
