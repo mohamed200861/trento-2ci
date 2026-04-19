@@ -1,8 +1,8 @@
 import { NavLink, Outlet, Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import logoFoto from "@/assets/real-muse-sala.jpg";
-import footerFoto from "@/assets/real-terrazza.jpg";
+import logoFotoDefault from "@/assets/real-muse-sala.jpg";
+import footerFotoDefault from "@/assets/real-muse-serra.jpg";
 import { useSiteContent } from "@/hooks/useSiteContent";
 
 const nav = [
