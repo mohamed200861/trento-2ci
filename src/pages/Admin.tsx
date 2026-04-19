@@ -59,7 +59,7 @@ export default function Admin() {
           ))}
         </div>
 
-        {tab === "home" && <p className="card-elev p-8 text-muted-foreground">I testi della Home si modificano nella scheda <strong>Testi del sito</strong>. Le foto principali (hero, MUSE, piazza, terrazza) sono fisse nel codice — per cambiarle, sostituiscile dalla scheda Galleria oppure caricale qui sotto come foto di galleria in evidenza.</p>}
+        {tab === "home" && <HomeAdmin/>}
         {tab === "gallery" && <GalleryAdmin/>}
         {tab === "videos" && <VideosAdmin/>}
         {tab === "articles" && <ArticlesAdmin/>}
