@@ -20,6 +20,7 @@ const TEXT_FIELDS: { key: string; label: string; multiline?: boolean }[] = [
   { key: "articoli_intro", label: "Articoli · Introduzione", multiline: true },
   { key: "footer_phrase", label: "Footer · Frase del progetto", multiline: true },
   { key: "teachers_thanks", label: "Footer · Ringraziamento ai professori", multiline: true },
+  { key: "footer_copyright", label: "Footer · Riga del copyright (in basso)" },
 ];
 
 export default function Admin() {
@@ -278,13 +279,15 @@ function TextsAdmin() {
 
 // ============ HOME IMAGES ============
 const HOME_IMAGES: { key: string; label: string; description: string }[] = [
-  { key: "home_hero_url", label: "Foto principale (Hero in alto)", description: "Sfondo grande accanto al titolo \"2CI a Trento\"." },
-  { key: "header_logo_url", label: "Foto tonda accanto al titolo (header)", description: "Piccola immagine circolare accanto a \"2CI a Trento\" nella barra in alto." },
-  { key: "home_muse_serra_url", label: "Sezione MUSE · serra tropicale", description: "Foto grande nel blocco \"Tra ghiacciai, foreste e piani di altitudine\"." },
-  { key: "home_muse_sala_url", label: "Sezione MUSE · sala interna", description: "Foto piccola sotto, nello stesso blocco MUSE." },
-  { key: "home_piazza_url", label: "Sezione Centro storico (Piazza Duomo)", description: "Foto grande nel blocco \"Tra piazze, fontane e secoli di storia\"." },
-  { key: "galleria_hero_url", label: "Galleria · foto hero in alto", description: "Sfondo della pagina Galleria." },
-  { key: "footer_bg_url", label: "Footer · sfondo del piè di pagina", description: "Immagine sfumata sul fondo del sito." },
+  { key: "home_hero_url", label: "Home · Foto hero in alto", description: "Sfondo grande accanto al titolo \"2CI a Trento\"." },
+  { key: "header_logo_url", label: "Header · Foto tonda accanto al titolo", description: "Piccola immagine circolare accanto a \"2CI a Trento\" nella barra in alto." },
+  { key: "home_muse_serra_url", label: "Home · Sezione MUSE serra", description: "Foto grande nel blocco \"Tra ghiacciai, foreste e piani di altitudine\"." },
+  { key: "home_muse_sala_url", label: "Home · Sezione MUSE sala", description: "Foto piccola sotto, nello stesso blocco MUSE." },
+  { key: "home_piazza_url", label: "Home · Sezione Centro storico", description: "Foto grande nel blocco \"Tra piazze, fontane e secoli di storia\"." },
+  { key: "galleria_hero_url", label: "Galleria · Foto hero in alto", description: "Sfondo della pagina Galleria foto." },
+  { key: "video_hero_url", label: "Video · Foto hero in alto", description: "Sfondo della pagina Video dei gruppi." },
+  { key: "articoli_hero_url", label: "Articoli · Foto hero in alto", description: "Sfondo della pagina Articoli degli studenti." },
+  { key: "footer_bg_url", label: "Footer · Sfondo del piè di pagina", description: "Immagine sfumata sul fondo del sito." },
 ];
 
 function HomeAdmin() {
