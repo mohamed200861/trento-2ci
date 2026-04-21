@@ -17,6 +17,7 @@ interface Article {
 export default function Articoli() {
   const [articles, setArticles] = useState<Article[]>([]);
   const { get } = useSiteContent();
+  const heroFoto = get("articoli_hero_url") || heroFotoDefault;
 
   useEffect(() => {
     supabase.from("articles").select("*").then(({ data }) => {
@@ -67,8 +68,17 @@ export default function Articoli() {
                 <p className="text-sm text-muted-foreground leading-relaxed flex-1">
                   {a.description || "Riflessioni e racconto della giornata a Trento."}
                 </p>
+                {a.content_type === "link" && a.link_url && (
+                  <span className="inline-flex items-center gap-1.5 mt-4 self-start text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 rounded-full bg-accent/15 text-accent-foreground">
+                    <Globe className="w-3 h-3"/> Progetto online
+                  </span>
+                )}
                 <div className="mt-6 pt-6 border-t border-border/60 flex gap-2">
-                  {a.pdf_url ? (
+                  {a.content_type === "link" && a.link_url ? (
+                    <a href={a.link_url} target="_blank" rel="noopener noreferrer" className="btn-primary flex-1 !py-2.5 !text-xs inline-flex items-center justify-center gap-1.5">
+                      Visita il lavoro <ExternalLink className="w-3.5 h-3.5"/>
+                    </a>
+                  ) : a.pdf_url ? (
                     <>
                       <a href={a.pdf_url} target="_blank" rel="noopener" className="btn-primary flex-1 !py-2.5 !text-xs">
                         Apri PDF
