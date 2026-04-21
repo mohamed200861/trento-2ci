@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Download, FileText } from "lucide-react";
-import heroFoto from "@/assets/real-piazza-duomo.jpg";
+import { Download, FileText, ExternalLink, Globe } from "lucide-react";
+import heroFotoDefault from "@/assets/real-piazza-duomo.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteContent } from "@/hooks/useSiteContent";
 
@@ -10,6 +10,8 @@ interface Article {
   title: string;
   description: string;
   pdf_url: string | null;
+  content_type: string;
+  link_url: string | null;
 }
 
 export default function Articoli() {
