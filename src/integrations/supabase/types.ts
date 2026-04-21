@@ -16,9 +16,11 @@ export type Database = {
     Tables: {
       articles: {
         Row: {
+          content_type: string
           created_at: string
           description: string | null
           id: string
+          link_url: string | null
           pdf_storage_path: string | null
           pdf_url: string | null
           student_name: string
@@ -26,9 +28,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          content_type?: string
           created_at?: string
           description?: string | null
           id?: string
+          link_url?: string | null
           pdf_storage_path?: string | null
           pdf_url?: string | null
           student_name: string
@@ -36,9 +40,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          content_type?: string
           created_at?: string
           description?: string | null
           id?: string
+          link_url?: string | null
           pdf_storage_path?: string | null
           pdf_url?: string | null
           student_name?: string
@@ -79,6 +85,7 @@ export type Database = {
       }
       group_videos: {
         Row: {
+          class_name: string
           description: string | null
           group_number: number
           id: string
@@ -90,6 +97,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          class_name?: string
           description?: string | null
           group_number: number
           id?: string
@@ -101,6 +109,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          class_name?: string
           description?: string | null
           group_number?: number
           id?: string
