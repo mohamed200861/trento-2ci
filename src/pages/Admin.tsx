@@ -20,6 +20,7 @@ const TEXT_FIELDS: { key: string; label: string; multiline?: boolean }[] = [
   { key: "articoli_intro", label: "Articoli · Introduzione", multiline: true },
   { key: "footer_phrase", label: "Footer · Frase del progetto", multiline: true },
   { key: "teachers_thanks", label: "Footer · Ringraziamento ai professori", multiline: true },
+  { key: "footer_copyright", label: "Footer · Riga del copyright (in basso)" },
 ];
 
 export default function Admin() {
@@ -137,12 +138,13 @@ function GalleryAdmin() {
 // ============ VIDEOS ============
 function VideosAdmin() {
   const [videos, setVideos] = useState<any[]>([]);
-  const load = () => supabase.from("group_videos").select("*").order("group_number").then(({ data }) => setVideos(data ?? []));
+  const [activeClass, setActiveClass] = useState<"2CI" | "2BLS">("2CI");
+  const load = () => supabase.from("group_videos").select("*").order("class_name").order("group_number").then(({ data }) => setVideos(data ?? []));
   useEffect(() => { load(); }, []);
 
   const uploadFile = async (v: any, file: File, kind: "video" | "thumb") => {
     const bucket = kind === "video" ? "videos" : "thumbnails";
-    const path = `gruppo-${v.group_number}-${Date.now()}-${file.name}`;
+    const path = `${v.class_name}-gruppo-${v.group_number}-${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from(bucket).upload(path, file);
     if (error) { toast.error(error.message); return; }
     const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path);
@@ -156,33 +158,47 @@ function VideosAdmin() {
     toast.success("Salvato");
   };
 
+  const filtered = videos.filter(v => v.class_name === activeClass);
+
   return (
-    <div className="space-y-4">
-      {videos.map(v => (
-        <div key={v.id} className="card-elev p-6 grid md:grid-cols-3 gap-5">
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground grid place-items-center font-display">{v.group_number}</div>
-              <div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">Gruppo</div>
-                <div className="font-display text-lg">Numero {v.group_number}</div>
+    <div className="space-y-6">
+      <div className="inline-flex p-1 rounded-full bg-muted">
+        {(["2CI","2BLS"] as const).map(c => (
+          <button key={c} onClick={() => setActiveClass(c)}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${activeClass === c ? "bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground hover:text-foreground"}`}>
+            Classe {c}
+          </button>
+        ))}
+      </div>
+      <div className="space-y-4">
+        {filtered.map(v => (
+          <div key={v.id} className="card-elev p-6 grid md:grid-cols-3 gap-5">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground grid place-items-center font-display">{v.group_number}</div>
+                <div>
+                  <div className="text-xs uppercase tracking-widest text-muted-foreground">Gruppo · {v.class_name}</div>
+                  <div className="font-display text-lg">Numero {v.group_number}</div>
+                </div>
               </div>
+              <p className="text-xs text-muted-foreground">{(v.members ?? []).join(", ")}</p>
             </div>
-            <p className="text-xs text-muted-foreground">{(v.members ?? []).join(", ")}</p>
+            <div className="space-y-3">
+              <label className="block text-xs uppercase tracking-widest text-muted-foreground">Video {v.video_url && <span className="text-accent normal-case">✓ presente</span>}</label>
+              <input type="file" accept="video/*" onChange={e => e.target.files?.[0] && uploadFile(v, e.target.files[0], "video")} className="block w-full text-xs"/>
+              {v.thumbnail_url && <img src={v.thumbnail_url} alt="" className="w-full h-20 object-cover rounded-lg mt-1"/>}
+              <label className="block text-xs uppercase tracking-widest text-muted-foreground mt-3">Thumbnail {v.thumbnail_url && <span className="text-accent normal-case">✓ presente</span>}</label>
+              <input type="file" accept="image/*" onChange={e => e.target.files?.[0] && uploadFile(v, e.target.files[0], "thumb")} className="block w-full text-xs"/>
+            </div>
+            <div>
+              <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">Descrizione</label>
+              <textarea defaultValue={v.description} onBlur={e => e.target.value !== v.description && updateDesc(v, e.target.value)}
+                rows={4} className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm"/>
+            </div>
           </div>
-          <div className="space-y-3">
-            <label className="block text-xs uppercase tracking-widest text-muted-foreground">Video {v.video_url && <span className="text-accent normal-case">✓ presente</span>}</label>
-            <input type="file" accept="video/*" onChange={e => e.target.files?.[0] && uploadFile(v, e.target.files[0], "video")} className="block w-full text-xs"/>
-            <label className="block text-xs uppercase tracking-widest text-muted-foreground mt-3">Thumbnail {v.thumbnail_url && <span className="text-accent normal-case">✓ presente</span>}</label>
-            <input type="file" accept="image/*" onChange={e => e.target.files?.[0] && uploadFile(v, e.target.files[0], "thumb")} className="block w-full text-xs"/>
-          </div>
-          <div>
-            <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">Descrizione</label>
-            <textarea defaultValue={v.description} onBlur={e => e.target.value !== v.description && updateDesc(v, e.target.value)}
-              rows={4} className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm"/>
-          </div>
-        </div>
-      ))}
+        ))}
+        {filtered.length === 0 && <p className="text-muted-foreground text-center py-12">Nessun gruppo per questa classe.</p>}
+      </div>
     </div>
   );
 }
@@ -206,37 +222,63 @@ function ArticlesAdmin() {
     const { error } = await supabase.storage.from("articles-pdf").upload(path, file);
     if (error) { toast.error(error.message); return; }
     const { data: { publicUrl } } = supabase.storage.from("articles-pdf").getPublicUrl(path);
-    await update(a, { pdf_url: publicUrl, pdf_storage_path: path });
+    await update(a, { pdf_url: publicUrl, pdf_storage_path: path, content_type: "pdf" });
   };
 
   return (
     <div className="space-y-3">
-      {articles.map(a => (
-        <div key={a.id} className="card-elev p-5 grid md:grid-cols-12 gap-4 items-start">
-          <div className="md:col-span-3">
-            <input defaultValue={a.student_name} onBlur={e => e.target.value !== a.student_name && update(a, { student_name: e.target.value })}
-              className="w-full font-display text-lg font-semibold px-2 py-1 rounded border border-transparent hover:border-border focus:border-primary bg-transparent"/>
-            <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${a.pdf_url ? "bg-accent/20 text-accent-foreground" : "bg-muted text-muted-foreground"}`}>
-              {a.pdf_url ? "✓ PDF presente" : "PDF mancante"}
-            </span>
+      {articles.map(a => {
+        const isLink = a.content_type === "link";
+        return (
+          <div key={a.id} className="card-elev p-5 grid md:grid-cols-12 gap-4 items-start">
+            <div className="md:col-span-3">
+              <input defaultValue={a.student_name} onBlur={e => e.target.value !== a.student_name && update(a, { student_name: e.target.value })}
+                className="w-full font-display text-lg font-semibold px-2 py-1 rounded border border-transparent hover:border-border focus:border-primary bg-transparent"/>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                <span className={`text-xs px-2 py-0.5 rounded-full ${isLink ? "bg-accent/20 text-accent-foreground" : "bg-muted text-muted-foreground"}`}>
+                  {isLink ? "🌐 Link esterno" : "📄 PDF"}
+                </span>
+                {isLink ? (
+                  a.link_url ? <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent-foreground">✓ URL impostato</span>
+                  : <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/15 text-destructive">URL mancante</span>
+                ) : (
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${a.pdf_url ? "bg-accent/20 text-accent-foreground" : "bg-muted text-muted-foreground"}`}>
+                    {a.pdf_url ? "✓ PDF presente" : "PDF mancante"}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="md:col-span-3">
+              <label className="text-xs text-muted-foreground">Titolo articolo</label>
+              <input defaultValue={a.title ?? ""} onBlur={e => e.target.value !== (a.title ?? "") && update(a, { title: e.target.value })}
+                placeholder="(opzionale)" className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-sm"/>
+            </div>
+            <div className="md:col-span-3">
+              <label className="text-xs text-muted-foreground">Descrizione</label>
+              <textarea defaultValue={a.description ?? ""} onBlur={e => e.target.value !== (a.description ?? "") && update(a, { description: e.target.value })}
+                rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-sm"/>
+            </div>
+            <div className="md:col-span-3 space-y-2">
+              <label className="text-xs text-muted-foreground">Tipo contenuto</label>
+              <select value={a.content_type ?? "pdf"} onChange={e => update(a, { content_type: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm">
+                <option value="pdf">📄 PDF</option>
+                <option value="link">🌐 Link esterno</option>
+              </select>
+              {isLink ? (
+                <input type="url" defaultValue={a.link_url ?? ""} placeholder="https://..."
+                  onBlur={e => e.target.value !== (a.link_url ?? "") && update(a, { link_url: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-card text-xs"/>
+              ) : (
+                <>
+                  <input type="file" accept="application/pdf" onChange={e => e.target.files?.[0] && uploadPdf(a, e.target.files[0])} className="block w-full text-xs"/>
+                  {a.pdf_url && <a href={a.pdf_url} target="_blank" rel="noopener" className="text-xs text-accent hover:underline block">Apri PDF</a>}
+                </>
+              )}
+            </div>
           </div>
-          <div className="md:col-span-3">
-            <label className="text-xs text-muted-foreground">Titolo articolo</label>
-            <input defaultValue={a.title ?? ""} onBlur={e => e.target.value !== (a.title ?? "") && update(a, { title: e.target.value })}
-              placeholder="(opzionale)" className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-sm"/>
-          </div>
-          <div className="md:col-span-4">
-            <label className="text-xs text-muted-foreground">Descrizione</label>
-            <textarea defaultValue={a.description ?? ""} onBlur={e => e.target.value !== (a.description ?? "") && update(a, { description: e.target.value })}
-              rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-card text-sm"/>
-          </div>
-          <div className="md:col-span-2">
-            <label className="text-xs text-muted-foreground">PDF</label>
-            <input type="file" accept="application/pdf" onChange={e => e.target.files?.[0] && uploadPdf(a, e.target.files[0])} className="block w-full text-xs mt-1"/>
-            {a.pdf_url && <a href={a.pdf_url} target="_blank" rel="noopener" className="text-xs text-accent hover:underline mt-1 block">Apri PDF</a>}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -278,13 +320,15 @@ function TextsAdmin() {
 
 // ============ HOME IMAGES ============
 const HOME_IMAGES: { key: string; label: string; description: string }[] = [
-  { key: "home_hero_url", label: "Foto principale (Hero in alto)", description: "Sfondo grande accanto al titolo \"2CI a Trento\"." },
-  { key: "header_logo_url", label: "Foto tonda accanto al titolo (header)", description: "Piccola immagine circolare accanto a \"2CI a Trento\" nella barra in alto." },
-  { key: "home_muse_serra_url", label: "Sezione MUSE · serra tropicale", description: "Foto grande nel blocco \"Tra ghiacciai, foreste e piani di altitudine\"." },
-  { key: "home_muse_sala_url", label: "Sezione MUSE · sala interna", description: "Foto piccola sotto, nello stesso blocco MUSE." },
-  { key: "home_piazza_url", label: "Sezione Centro storico (Piazza Duomo)", description: "Foto grande nel blocco \"Tra piazze, fontane e secoli di storia\"." },
-  { key: "galleria_hero_url", label: "Galleria · foto hero in alto", description: "Sfondo della pagina Galleria." },
-  { key: "footer_bg_url", label: "Footer · sfondo del piè di pagina", description: "Immagine sfumata sul fondo del sito." },
+  { key: "home_hero_url", label: "Home · Foto hero in alto", description: "Sfondo grande accanto al titolo \"2CI a Trento\"." },
+  { key: "header_logo_url", label: "Header · Foto tonda accanto al titolo", description: "Piccola immagine circolare accanto a \"2CI a Trento\" nella barra in alto." },
+  { key: "home_muse_serra_url", label: "Home · Sezione MUSE serra", description: "Foto grande nel blocco \"Tra ghiacciai, foreste e piani di altitudine\"." },
+  { key: "home_muse_sala_url", label: "Home · Sezione MUSE sala", description: "Foto piccola sotto, nello stesso blocco MUSE." },
+  { key: "home_piazza_url", label: "Home · Sezione Centro storico", description: "Foto grande nel blocco \"Tra piazze, fontane e secoli di storia\"." },
+  { key: "galleria_hero_url", label: "Galleria · Foto hero in alto", description: "Sfondo della pagina Galleria foto." },
+  { key: "video_hero_url", label: "Video · Foto hero in alto", description: "Sfondo della pagina Video dei gruppi." },
+  { key: "articoli_hero_url", label: "Articoli · Foto hero in alto", description: "Sfondo della pagina Articoli degli studenti." },
+  { key: "footer_bg_url", label: "Footer · Sfondo del piè di pagina", description: "Immagine sfumata sul fondo del sito." },
 ];
 
 function HomeAdmin() {

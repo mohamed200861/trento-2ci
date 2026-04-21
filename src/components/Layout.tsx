@@ -106,7 +106,7 @@ export default function Layout() {
           </div>
           <div className="border-t border-primary-foreground/10">
             <div className="container-prose py-6 text-xs text-primary-foreground/60 text-center">
-              © {new Date().getFullYear()} Classe 2CI — Progetto di educazione civica
+              {get("footer_copyright", `© ${new Date().getFullYear()} Classe 2CI — Progetto di educazione civica — BIG MOMO — pls 10`)}
             </div>
           </div>
         </div>
